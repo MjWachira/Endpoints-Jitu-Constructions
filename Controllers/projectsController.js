@@ -1,4 +1,7 @@
-const {v4} = require('uuid')
+const {v4} = require('uuid');
+const { createProjectsTable } = require('../Database/Tables/projectsTable');
+const mssql = require('mssql');
+const { sqlConfig } = require('../Config/config');
 const projects = [];
 
 class Project{
@@ -14,18 +17,26 @@ class Project{
 const createProject = async (req, res)=>{
     try {
         const id =v4()
-
         const { project_name,description, project_location, startdate, enddate} =req.body
+        const pool = await mssql.connect(sqlConfig)        
+        // if(pool.connected){
+        // }
+        const result=await pool.request()
+        .input('id',id)
+        .input('project_name',mssql.VarChar,project_name)
+        .input('description',mssql.VarChar,description)
+        .input('project_location',mssql.VarChar,project_location)
+        .input('startdate',mssql.Date,startdate)
+        .input('enddate',mssql.Date,enddate)
 
-        const newProject = {id, project_name,description, project_location, startdate, enddate }
-        
-        projects.push(newProject)
-
-        // console.log(projects)
-        res.json({
-            message:"project created successfully",
-            project: newProject
-        })
+        .execute(`createProjectPROC`)
+        if(result.rowsAffected == 1){
+            return res.json({
+                message: "Project created Successfully",
+            })  
+            }else{
+                return res.json({message: "Creation failed"})
+            } 
     } catch(error){
         return res.json({error})
     }
@@ -33,7 +44,10 @@ const createProject = async (req, res)=>{
 
 const getProjects = async(req, res)=>{
     try{
-        res.json({projects:projects})
+        // res.json({projects:projects})
+        const pool = await (mssql.connect(sqlConfig))
+        const allproject = (await pool.request().execute(`getAllProjects`)).recordset
+        res.json({projects: allproject})
 
     }catch(error){
         return res.json({error})
@@ -43,37 +57,45 @@ const getProjects = async(req, res)=>{
 const getOneProject = async(req, res)=>{
     try{
         const id = req.params.id
-        // console.log(id)
-
-        const project= projects.filter(el =>el.id == id)
+        // const project= projects.filter(el =>el.id == id)
         // console.log(project);
+        const pool = await mssql.connect(sqlConfig)
+        const project = (await pool.request().input('id', id).execute('getOneProject')).recordset
         res.json({
-            project
+            project:project
         })
     }catch(error){
         return res.json({error})
     }
 }
-const updateProject = async(req,res)=>{
-    try{
-        const id=req.params.id
+const updateProject = async(req, res)=>{
+    try {
+        const {id} = req.params
+        const {project_name, description, project_location, startdate, enddate} = req.body
+        const pool = await mssql.connect(sqlConfig)
+        const result = (await pool.request()
+        .input('id',id)
+        .input('project_name',mssql.VarChar,project_name)
+        .input('description',mssql.VarChar,description)
+        .input('project_location',mssql.VarChar,project_location)
+        .input('startdate',mssql.Date,startdate)
+        .input('enddate',mssql.Date,enddate)
 
-        const {project_name,description, project_location, startdate, enddate}=req.body
-        
-        const project_index= projects.findIndex(project=>project.id ==id)
+        .execute('updateProject'));
 
-        if(project_index<0){
-            res.json("project not found")
+        console.log(result);
+
+        if(result.rowsAffected == 1){
+            res.json({
+                message: 'project updated successfully'
+            })
         }else{
-            projects[project_index]=new Project(id,project_name,description, project_location, startdate, enddate)
+            res.json({
+                message: 'project not found'
+            })
         }
-        res.json({
-            message:'Project updted successfully',
-            project:projects[project_index]
-        })
-
-    }catch(error){
-        return res.json({error})
+    } catch (error) {
+        return res.json({Error: error})
     }
 }
 
@@ -81,18 +103,19 @@ const deleteProject =async(req, res)=>{
     try{
 
         const id = req.params.id
-
-        let project_index = projects.findIndex(project =>project.id==id)
-
-        if (project_index<0){
-            res.json({messagea:'project not found'})
+        const pool = await mssql.connect(sqlConfig)
+        const result = await pool.request()
+        .input('id', id)
+        .execute('deleteProject')
+        if(result.rowsAffected == 1){
+            res.json({
+                    message: 'Project deleted successfully'
+            })
         }else{
-            projects.splice(project_index,1)
-        }
-
-        res.json({
-            message:'project deleted succesfully'
+            res.json({
+                message: 'Project not found'
         })
+        }
         
     }catch(error){
         return res.json({Error:error})

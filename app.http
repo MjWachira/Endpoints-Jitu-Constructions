@@ -4,31 +4,31 @@ POST http://localhost:4200/project
 Content-Type: application/json
 
 {
-    "project_name": "Build Bridge",
+    "project_name": "Build dam",
     "description": "build holding 100 cars at once ",
     "project_location":"Nyeri",
-    "startdate": "24/7/2023",
-    "enddate": "24/7/25"
+    "startdate": "2023/7/25",
+    "enddate": "2024/7/25"
 }
 ###
 GET http://localhost:4200/project
 
 
 ###
-GET http://localhost:4200/project/905c9839-5a62-437d-a4c2-2acac8c3e10f
+GET http://localhost:4200/project/17b69921-b058-4097-921a-93c7f7b6b93c
 
 
 ###
-PUT http://localhost:4200/project/905c9839-5a62-437d-a4c2-2acac8c3e10f
+PUT http://localhost:4200/project/17b69921-b058-4097-921a-93c7f7b6b93c
 Content-Type: application/json
 
 {
     "project_name": "Build a House",
     "description": "build hOUSE 100 cars at once ",
     "project_location":"Meru",
-    "startdate": "24/7/2023",
-    "enddate": "24/7/25"
+    "startdate": "2023/7/25",
+    "enddate": "2024/7/25"
 }
 
 ###
-DELETE http://localhost:4200/project/ba96ebf7-2e79-44a3-bd71-77cedb9d0be0
+DELETE http://localhost:4200/project/444ef918-8632-417f-9acb-d44341e01aae
