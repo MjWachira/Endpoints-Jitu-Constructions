@@ -16,7 +16,7 @@ rest client extension
 
 npm instal bcrypt
 
-npm install jwt
+npm install jsonwebtoken
 
 npm install joi
 

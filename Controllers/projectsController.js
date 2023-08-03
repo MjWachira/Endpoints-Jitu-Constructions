@@ -2,7 +2,7 @@ const {v4} = require('uuid');
 const { createProjectsTable } = require('../Database/Tables/projectsTable');
 const mssql = require('mssql');
 const { sqlConfig } = require('../Config/config');
-const projects = [];
+//const projects = [];
 
 class Project{
     constructor(id,project_name,description, project_location, startdate, enddate){
@@ -16,27 +16,32 @@ class Project{
 
 const createProject = async (req, res)=>{
     try {
-        const id =v4()
-        const { project_name,description, project_location, startdate, enddate} =req.body
-        const pool = await mssql.connect(sqlConfig)        
-        // if(pool.connected){
-        // }
-        const result=await pool.request()
-        .input('id',id)
-        .input('project_name',mssql.VarChar,project_name)
-        .input('description',mssql.VarChar,description)
-        .input('project_location',mssql.VarChar,project_location)
-        .input('startdate',mssql.Date,startdate)
-        .input('enddate',mssql.Date,enddate)
+        const id = v4()
 
-        .execute(`createProjectPROC`)
-        if(result.rowsAffected == 1){
-            return res.json({
-                message: "Project created Successfully",
-            })  
-            }else{
-                return res.json({message: "Creation failed"})
-            } 
+        const {project_name, description, project_location, startdate, enddate} = req.body
+
+        const pool = await mssql.connect(sqlConfig)
+
+        // if(pool.connected){
+        const result = await pool.request()
+        .input('id', mssql.VarChar, id)
+        .input('project_name', mssql.VarChar, project_name)
+        .input('description', mssql.VarChar, description)
+        .input('project_location', mssql.VarChar, project_location)
+        .input('startdate', mssql.Date, startdate)
+        .input('enddate', mssql.Date, enddate)
+        .execute('createProjectPROC')
+        console.log(result)
+
+        if(result.rowsAffected[0] == 1){
+        return res.json({
+            message: "project created Successfully",
+        
+        })  
+        }else{
+            return res.json({message: "creation failed"})
+        }   
+    // }
     } catch(error){
         return res.json({error})
     }
@@ -46,7 +51,7 @@ const getProjects = async(req, res)=>{
     try{
         // res.json({projects:projects})
         const pool = await (mssql.connect(sqlConfig))
-        const allproject = (await pool.request().execute(`getAllProjects`)).recordset
+        const allproject = (await pool.request().execute('getAllProjects')).recordset
         res.json({projects: allproject})
 
     }catch(error){
